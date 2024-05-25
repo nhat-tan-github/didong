@@ -1,5 +1,6 @@
 package com.example.myapplication.activity
 
+import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
@@ -22,6 +23,7 @@ class activity_class : AppCompatActivity() {
     private lateinit var exerciseAdapter: ExerciseAdapter
     private lateinit var sharedPref: SharedPreferences
 
+    @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityClassBinding.inflate(layoutInflater)
