@@ -5,5 +5,5 @@
     <padding android:bottom="4dp"/>
     <padding android:top="4dp"/>
     <margin  android:left="4dp"/>
-    <solid android:color="#33f4ea0f"/>
+    <solid android:color="#AA131324"/>
 </shape>

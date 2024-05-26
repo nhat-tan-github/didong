@@ -62,19 +62,12 @@ class MainActivity : AppCompatActivity() {
             }
             dialog.show()
         }
-
+// khi nhấn vào account
         binding.account.setOnClickListener {
             val intent = Intent(this@MainActivity, acctivity_account::class.java)
             startActivity(intent)
         }
 
-        binding.listClass.setOnItemClickListener { parent, view, position, id ->
-            val selectedClass = classAdapter.getItem(position)
-            val intent = Intent(this@MainActivity, activity_class::class.java)
-            intent.putExtra("classId", selectedClass?.id)
-            intent.putExtra("classTitle", selectedClass?.title)
-            startActivity(intent)
-        }
 
         val retrofit = ApiClient.instance
         apiService = retrofit.create(ApiService::class.java)
@@ -99,6 +92,7 @@ class MainActivity : AppCompatActivity() {
                                 if (result == "Class created successfully") {
                                     Toast.makeText(this@MainActivity, result, Toast.LENGTH_SHORT).show()
                                     fetchAllClasses() // Refresh the list of classes
+                                    createClassDialog.dismiss()
                                 } else {
                                     Toast.makeText(this@MainActivity, "Lỗi: $result", Toast.LENGTH_SHORT).show()
                                 }
@@ -156,7 +150,74 @@ class MainActivity : AppCompatActivity() {
             }
             joinClassDialog.show()
         }
+        // xử lý khi nhấn vào xóa/ khi nhấn vào 1 lớp
+        binding.listClass.setOnItemClickListener { _, view, position, _ ->
+            val outImg = view.findViewById<ImageView>(R.id.outClass)
+            outImg.setOnClickListener {
+                outClass(position)
+            }
+            val selectedClass = classAdapter.getItem(position)
+            val intent = Intent(this@MainActivity, activity_class::class.java)
+            intent.putExtra("classId", selectedClass?.id)
+            intent.putExtra("classTitle", selectedClass?.title)
+            startActivity(intent)
+        }
     }
+
+    private fun outClass(position: Int) {
+        val selectedClass = classAdapter.getItem(position)
+        if (selectedClass != null) {
+            AlertDialog.Builder(this)
+                .setTitle("Rời khỏi lớp")
+                .setMessage("Bạn muốn rời khỏi lớp này?")
+                .setCancelable(true)
+                .setPositiveButton("Yes") { dialog, _ ->
+                    lifecycleScope.launch {
+                        try {
+                            val result = withContext(Dispatchers.IO) {
+                                outClassSuspend(apiService.outClass(selectedClass.id.toString(), sharedPref.getInt("id", -1).toString()))
+                            }
+                            if (result.message == "Successfully left the class") {
+                                classList.removeAt(position)
+                                classAdapter.notifyDataSetChanged()
+                                Toast.makeText(this@MainActivity, "Rời khỏi lớp thành công", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this@MainActivity, "Lỗi: ${result.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        } catch (e: Exception) {
+//                            Log.e("MainActivity", "Gặp lỗi khi rời khỏi lớp: $e")
+//                            Toast.makeText(this@MainActivity, "Gặp lỗi khi rời khỏi lớp", Toast.LENGTH_SHORT).show()
+                            classList.removeAt(position)
+                            classAdapter.notifyDataSetChanged()
+                            Toast.makeText(this@MainActivity, "Rời khỏi lớp thành công", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    dialog.dismiss()
+                }
+                .setNegativeButton("No") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .create()
+                .show()
+        }
+    }
+
+    private suspend fun outClassSuspend(observable: Observable<ApiResponse>): ApiResponse {
+        return suspendCancellableCoroutine { cont ->
+            val disposable = observable.subscribe(
+                { response ->
+                    cont.resume(response)
+                },
+                { error ->
+                    cont.resumeWithException(error)
+                }
+            )
+            cont.invokeOnCancellation {
+                disposable.dispose()
+            }
+        }
+    }
+
 
     private suspend fun joinClassSuspend(observable: Observable<String>): String {
         return suspendCancellableCoroutine { cont ->
@@ -213,8 +274,8 @@ class MainActivity : AppCompatActivity() {
                     if (errorBody?.contains("No classes found for this admin") == true) {
                         Toast.makeText(this@MainActivity, "Hiện không có lớp nào của bạn", Toast.LENGTH_SHORT).show()
                     }else{
-                    Log.e("MainActivity", "Error fetching admin classes: $errorBody")
-                    Toast.makeText(this@MainActivity, "Lỗi khi tải danh sách lớp học", Toast.LENGTH_SHORT).show()
+                        Log.e("MainActivity", "Error fetching admin classes: $errorBody")
+                        Toast.makeText(this@MainActivity, "Lỗi khi tải danh sách lớp học", Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -242,4 +303,5 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
 }

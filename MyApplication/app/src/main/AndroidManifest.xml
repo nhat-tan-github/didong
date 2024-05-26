@@ -15,6 +15,9 @@
         android:theme="@style/Theme.MyApplication"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".activity.ActivitySubmit"
+            android:exported="false" />
+        <activity
             android:name=".activity.activity_class"
             android:exported="false" />
         <activity

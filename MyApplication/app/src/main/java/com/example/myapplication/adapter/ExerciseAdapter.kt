@@ -18,7 +18,9 @@ class ExerciseAdapter(context: Context, private val resource: Int, private val i
         val exerciseItem = items[position]
         val dayCreatedTextView = view.findViewById<TextView>(R.id.dayCreated)
         val postNameTextView = view.findViewById<TextView>(R.id.postName)
+        val exIdTextView = view.findViewById<TextView>(R.id.exId)
 
+        exIdTextView.text = exerciseItem.postId.toString()
         dayCreatedTextView.text = exerciseItem.dayCreated
         postNameTextView.text = exerciseItem.postName
 

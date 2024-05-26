@@ -101,6 +101,48 @@ app.post('/login/', (req, res, next) => {
     });
 });
 
+app.post('/change-password', (req, res, next) => {
+    var post_data = req.body;
+    var email = post_data.email;
+    var oldPassword = post_data.oldPassword;
+    var newPassword = post_data.newPassword;
+
+    con.query('SELECT * FROM users WHERE email = ?', [email], function(err, result, fields) {
+        if (err) {
+            console.log('[MySQL ERROR] ', err);
+            res.status(500).json('Internal server error');
+            return;
+        }
+
+        if (result && result.length) {
+            var salt = result[0].salt;
+            var encrypted_password = result[0].encrypted_password;
+            var hashed_old_password = checkHashPassword(oldPassword, salt).passwordHash;
+
+            if (encrypted_password === hashed_old_password) {
+                // Mã hóa mật khẩu mới
+                var newHashedPasswordData = saltHashPassword(newPassword);
+                var newEncryptedPassword = newHashedPasswordData.passwordHash;
+                var newSalt = newHashedPasswordData.salt;
+
+                // Cập nhật mật khẩu mới vào cơ sở dữ liệu
+                con.query('UPDATE users SET encrypted_password = ?, salt = ?, updated_at = NOW() WHERE email = ?', 
+                [newEncryptedPassword, newSalt, email], function(err, result, fields) {
+                    if (err) {
+                        console.log('[MySQL ERROR]', err);
+                        res.status(500).json('Internal server error');
+                    } else {
+                        res.json('Password updated successfully');
+                    }
+                });
+            } else {
+                res.status(401).json('Wrong old password');
+            }
+        } else {
+            res.status(404).json('User not exists');
+        }
+    });
+});
 
 
 
@@ -189,18 +231,98 @@ app.post('/submit', (req, res, next) => {
     });
 });
 
-//tạo bài
-app.post('/post', (req, res, next) => {
+// Tạo bài tập (chỉ cho phép admin của lớp tạo bài tập)
+app.post('/post', async (req, res, next) => {
     var postData = req.body;
-    con.query('INSERT INTO `posts` (class_id, author_id,post_name, post_content, day_created) VALUES (?, ?,?, ?, NOW())', [postData.class_id, postData.author_id,postData.post_name, postData.post_content], function(err, result, fields) {
-        if (err) {
-            console.log('[MySQL ERROR]', err);
-            res.status(500).json('Internal server error');
-        } else {
-            res.json('Post created');
+    var classId = postData.class_id;
+    var authorId = postData.author_id;
+    var dayEnd = postData.day_end;
+    var postName = postData.post_name;
+    var postContent = postData.post_content;
+    var linkDrive = postData.link_drive; // Thêm link_drive từ body request
+
+    try {
+        // Kiểm tra xem người dùng có phải là admin của lớp không
+        const classResult = await queryDatabase('SELECT admin FROM class WHERE id = ?', [classId]);
+
+        if (classResult.length === 0) {
+            return res.status(404).json({ message: 'Class not found' });
         }
-    });
+
+        var adminId = classResult[0].admin;
+
+        if (adminId != authorId) {
+            return res.status(403).json({ message: 'You are not authorized to create a post for this class' });
+        }
+
+        console.log('Attempting to create a post with classId:', classId, 'authorId:', authorId);
+        console.log('Admin ID for classId', classId, 'is', adminId);
+
+        // Nếu người dùng là admin, tiếp tục tạo bài
+        con.query('INSERT INTO `posts` (class_id, author_id, post_name, post_content, day_created, day_end, link_drive) VALUES (?, ?, ?, ?, NOW(), ?, ?)', 
+                  [classId, authorId, postName, postContent, dayEnd, linkDrive], 
+                  function (err, result, fields) {
+            if (err) {
+                console.log('[MySQL ERROR]', err);
+                res.status(500).json({ message:'Internal server error'});
+            } else {
+                res.json({ message:'Post created'});
+            }
+        });
+    } catch (err) {
+        console.log('[MySQL ERROR]', err);
+        res.status(500).json({ message:'Internal server error'});
+    }
 });
+
+// Tạo bài tập (chỉ cho phép admin của lớp tạo bài tập)
+app.post('/post', async (req, res, next) => {
+    var postData = req.body;
+    var classId = postData.class_id;
+    var authorId = postData.author_id;
+    var dayEnd = postData.day_end;
+    var postName = postData.post_name;
+    var postContent = postData.post_content;
+    var linkDrive = postData.link_drive || ''; 
+
+    try {
+        // Kiểm tra xem người dùng có phải là admin của lớp không
+        const classResult = await queryDatabase('SELECT admin FROM class WHERE id = ?', [classId]);
+
+        if (classResult.length === 0) {
+            return res.status(404).json({ message: 'Class not found' });
+        }
+
+        var adminId = classResult[0].admin;
+
+        if (adminId != authorId) {
+            return res.status(403).json({ message: 'You are not authorized to create a post for this class' });
+        }
+
+        console.log('Attempting to create a post with classId:', classId, 'authorId:', authorId);
+        console.log('Admin ID for classId', classId, 'is', adminId);
+
+        // Nếu người dùng là admin, tiếp tục tạo bài
+        con.query('INSERT INTO `posts` (class_id, author_id, post_name, post_content, day_created, day_end, link_drive) VALUES (?, ?, ?, ?, NOW(), ?, ?)', 
+                  [classId, authorId, postName, postContent, dayEnd, linkDrive], 
+                  function (err, result, fields) {
+            if (err) {
+                console.log('[MySQL ERROR]', err);
+                res.status(500).json({ message:'Internal server error'});
+            } else {
+                res.json({ message:'Post created'});
+            }
+        });
+    } catch (err) {
+        console.log('[MySQL ERROR]', err);
+        res.status(500).json({ message:'Internal server error'});
+    }
+});
+
+
+
+
+
 //tạo lớp mới
 app.post('/create-class/', (req, res, next) => {
     const { title, adminId } = req.body;
@@ -246,8 +368,85 @@ app.post('/join-class/:classId', (req, res, next) => {
         }
     });
 });
+// Thoát lớp bằng ID lớp
+app.post('/leave-class/:classId', (req, res, next) => {
+    var classId = req.params.classId;
+    var studentId = req.body.studentId; // Nhận ID của học sinh từ body request
+
+    // Kiểm tra xem học sinh có tham gia lớp không
+    con.query('SELECT * FROM `student` WHERE student_id = ? AND class_id = ?', [studentId, classId], function(err, result, fields) {
+        if (err) {
+            console.log('[MySQL ERROR]', err);
+            res.status(500).json('Internal server error');
+        } else {
+            // Nếu học sinh chưa tham gia lớp, không thực hiện gì thêm
+            if (result && result.length === 0) {
+                res.json('Chưa tham gia lớp này!!!');
+            } else {
+                // Xóa học sinh khỏi lớp
+                con.query('DELETE FROM `student` WHERE student_id = ? AND class_id = ?', [studentId, classId], function(err, result, fields) {
+                    if (err) {
+                        console.log('[MySQL ERROR]', err);
+                        res.status(500).json('Internal server error');
+                    } else {
+                        res.json('Rời khỏi lớp thành công!');
+                    }
+                });
+            }
+        }
+    });
+});
+// Chỉnh sửa bài tập (chỉ cho phép admin của lớp chỉnh sửa bài tập)
+app.put('/edit-post/:postId', async (req, res, next) => {
+    try {
+        var postId = req.params.postId;
+        var authorId = req.body.author_id; 
+
+        // Kiểm tra xem người gửi yêu cầu có phải là admin của lớp không
+        const classResult = await queryDatabase('SELECT author_id FROM `posts` WHERE post_id = ?', [postId]);
+
+        var adminId = classResult[0].author_id;
+
+        if (adminId != authorId) {
+            return res.status(403).json({ message: 'You are not authorized to edit this post' });
+        }
+
+        // Nếu người gửi yêu cầu là admin, tiếp tục chỉnh sửa bài viết
+        var newPostName = req.body.post_name;
+        var newPostContent = req.body.post_content;
+        var newLink_Drive = req.body.link_drive
+        var newDay_End = req.body.day_end
+        con.query('UPDATE `posts` SET post_name = ?, post_content = ?,link_drive=?,day_end=? WHERE post_id = ?', [newPostName, newPostContent,newLink_Drive,newDay_End, postId], function (err, result, fields) {
+            if (err) {
+                console.log('[MySQL ERROR]', err);
+                res.status(500).json({ message:'Internal server error'});
+            } else {
+                res.json({ message:'Post edited'});
+            }
+        });
+    } catch (err) {
+        console.log('[MySQL ERROR]', err);
+        res.status(500).json({ message:'Internal server error'});
+    }
+});
+
+// Tìm bài đăng bằng post_id
+app.get('/post-by-id/:postId', (req, res, next) => {
+    var postId = req.params.postId;
+    
+    con.query('SELECT * FROM `posts` WHERE post_id = ?', [postId], function(err, result, fields) {
+        if (err) {
+            console.log('[MySQL ERROR]', err);
+            res.status(500).json('Internal server error');
+        } else if (result.length === 0) {
+            res.status(404).json('Post not found');
+        } else {
+            res.json(result[0]);
+        }
+    });
+});
 
 //Start Server
 app.listen(3000, ()=>{
-    console.log ('EDMTDev Restful running on port 3000');
+    console.log ('Restful running on port 3000');
 });

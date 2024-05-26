@@ -8,11 +8,7 @@ import com.example.myapplication.model.User
 import io.reactivex.Observable
 import retrofit2.Call
 import retrofit2.Response
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Path
+import retrofit2.http.*
 
 interface ApiService {
 // đăng ký
@@ -26,15 +22,36 @@ interface ApiService {
     @FormUrlEncoded
     fun loginUser(@Field ("email") email : String,
                   @Field ("password") password: String) :Observable<User>
+// đổi mật khẩu
+    @POST("/change-password")
+    @FormUrlEncoded
+    fun changePassword(
+        @Field("email") email: String,
+        @Field("oldPassword") oldPassword: String,
+        @Field("newPassword") newPassword: String
+    ): Call<ApiResponse>
 // tạo bài tập/ bài đăng mới
-    @POST("class/{classId}/post")
+    @POST("/post")
     @FormUrlEncoded
     fun createPost(
-        @Path("classId") classId: Int,
-        @Field("authorId") authorId: Int,
-        @Field("postName") postName: String,
-        @Field("postContent") postContent: String
-    ): Observable<String>
+    @Field("class_id") classId: Int,
+    @Field("author_id") authorId: Int,
+    @Field("post_name") postName: String,
+    @Field("post_content") postContent: String,
+    @Field("link_drive") linkDrive: String,
+    @Field("day_end") dayEnd: String
+    ): Call<ApiResponse>
+// edit lại 1 bài tập
+@PUT("/edit-post/{postId}")
+@FormUrlEncoded
+fun editPost(
+    @Path("postId") postId: String,
+    @Field("author_id") authorId: Int,
+    @Field("post_name") postName: String,
+    @Field("post_content") postContent: String,
+    @Field("link_drive") linkDrive: String,
+    @Field("day_end") dayEnd: String
+): Call<ApiResponse>
 
     // Tạo lớp mới
     @POST("create-class/")
@@ -52,8 +69,8 @@ interface ApiService {
     ): Observable<String>
 
 // Hiển thị bài trong 1 lớp
-@GET("post/{classId}")
-fun getPostsInClass(@Path("classId") classId: String): Call<List<Exercise>>
+    @GET("post/{classId}")
+    fun getPostsInClass(@Path("classId") classId: String): Call<List<Exercise>>
 
     // Hiển thị lớp đã tham gia
     @GET("class/user/{userId}")
@@ -62,6 +79,9 @@ fun getPostsInClass(@Path("classId") classId: String): Call<List<Exercise>>
     // Hiển thị lớp đã tham gia
     @GET("/admin-classes/{adminId}")
     suspend fun getUserAdminClasses(@Path("adminId") adminId: String): Response<List<MyClass>>
+// tìm bài bằng id
+    @GET("/post-by-id/{postId}")
+    fun getPostById(@Path("postId") postId: String): Call<Exercise>
 
 // Nộp bài
     @POST("submit")
@@ -71,5 +91,11 @@ fun getPostsInClass(@Path("classId") classId: String): Call<List<Exercise>>
         @Field("student_id") studentId: Int,
         @Field("submission_content") submissionContent: String
     ): Observable<String>
-
+// thoát lớp
+    @POST("/leave-class/{classId}")
+    @FormUrlEncoded
+    fun outClass(
+    @Path("classId") classId: String,
+        @Field("studentId") studentId: String
+    ): Observable<ApiResponse>
 }

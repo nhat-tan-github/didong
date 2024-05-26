@@ -35,7 +35,7 @@
 
     </LinearLayout>
     <ListView
-        android:id="@+id/listClass"
+        android:id="@+id/listExercise"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="20dp"
