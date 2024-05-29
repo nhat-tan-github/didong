@@ -58,7 +58,8 @@ fun editPost(
     @FormUrlEncoded
     fun createClass(
         @Field("title") title: String,
-        @Field("adminId") adminId: String
+        @Field("adminId") adminId: String,
+        @Field("admin_name") admin_name: String
     ): Observable<ApiResponse>
 // Tham gia lớp bằng ID lớp
     @POST("join-class/{classId}")
@@ -91,6 +92,16 @@ fun editPost(
         @Field("student_id") studentId: Int,
         @Field("submission_content") submissionContent: String
     ): Observable<String>
+
+//xóa bài nếu là admin
+@POST("/delete-post/{postId}")
+@FormUrlEncoded
+fun delPost(
+    @Path("postId") postId: Int,
+    @Field("author_id") author_id: Int
+): Observable<ApiResponse>
+
+
 // thoát lớp
     @POST("/leave-class/{classId}")
     @FormUrlEncoded

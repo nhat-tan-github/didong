@@ -75,7 +75,7 @@ class activity_login : AppCompatActivity() {
             .subscribe({ user ->
                 // Xử lý dữ liệu khi đăng nhập thành công
                 saveUserData(user)
-                Toast.makeText(this@activity_login, "Login success", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@activity_login, "Đăng nhập thành công", Toast.LENGTH_SHORT).show()
                 val intent = Intent(this@activity_login, MainActivity::class.java)
                 startActivity(intent)
                 // Chuyển sang màn hình khác hoặc thực hiện hành động khác
@@ -88,7 +88,7 @@ class activity_login : AppCompatActivity() {
 
 
     private fun saveUserData(user: User) {
-        // Lưu thông tin người dùng vào SharedPreferences hoặc bất kỳ nơi nào bạn cần
+        // Lưu thông tin người dùng vào SharedPreferences
         val sharedPref = getSharedPreferences("user_data", MODE_PRIVATE)
         val editor = sharedPref.edit()
         editor.putInt("id", user.id ?: -1)

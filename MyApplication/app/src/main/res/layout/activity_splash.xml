@@ -13,9 +13,8 @@
         android:layout_width="300dp"
         android:layout_height="300dp"
         app:lottie_autoPlay="true"
-
         app:lottie_loop="true"
-        app:lottie_rawRes="@raw/splash_animation_bg" />
+        app:lottie_rawRes="@raw/splash_animation" />
 
     <TextView
         android:id="@+id/textViewAppName"
@@ -30,11 +29,10 @@
         android:id="@+id/textViewSlogan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp"
         android:gravity="center"
+        android:paddingTop="8dp"
         android:text="Mang lớp học đến gần bạn!"
         android:textColor="@color/black"
-        android:textSize="20sp"
-        />
+        android:textSize="20sp" />
 
 </LinearLayout>

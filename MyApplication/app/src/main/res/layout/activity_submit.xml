@@ -21,7 +21,7 @@
     <TextView
         android:id="@+id/text"
         android:paddingTop="15dp"
-        android:paddingLeft="10dp"
+        android:paddingLeft="15dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="17sp"
@@ -39,27 +39,41 @@
    <TextView
        android:id="@+id/exName"
        android:paddingTop="15dp"
-       android:paddingLeft="10dp"
+       android:paddingLeft="15dp"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
        android:textSize="30sp"
-       android:textStyle="bold"
+       android:textColor="@color/black"
+
        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nội dung"
+        android:textSize="20dp"
+        android:paddingLeft="15dp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+
+        />
     <TextView
         android:id="@+id/excontext"
         android:paddingTop="15dp"
-        android:paddingLeft="10dp"
+        android:paddingLeft="15dp"
+        android:textColor="@color/black"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="30sp"
-        android:textStyle="bold"
+        android:textSize="18sp"
+
         />
     <TextView
         android:paddingTop="15dp"
-        android:paddingLeft="10dp"
+        android:paddingLeft="15dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="20sp"
+        android:textColor="@color/black"
+        android:textStyle="bold"
         android:text="Tệp đính kèm"
         />
     <TextView
@@ -69,19 +83,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="20sp"
+        android:autoLink="web"
+        android:linksClickable="true"
         />
 
-    <EditText
-        android:id="@+id/inpLink"
-        android:layout_width="330dp"
-        android:layout_marginTop="300dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
-        android:drawableStart="@drawable/baseline_add_link_24"
-        android:padding="10dp"
-        android:textSize="20sp" />
+<!--    <EditText-->
+<!--        android:id="@+id/inpLink"-->
+<!--        android:layout_width="330dp"-->
+<!--        android:layout_marginTop="300dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="bottom|center"-->
+<!--        android:drawableStart="@drawable/baseline_add_link_24"-->
+<!--        android:padding="10dp"-->
+<!--        android:textSize="20sp" />-->
     <Button
         android:id="@+id/button"
+        android:layout_marginTop="300dp"
         android:layout_width="350dp"
         android:layout_height="wrap_content"
         android:background="@drawable/btn_submit_bg_design"

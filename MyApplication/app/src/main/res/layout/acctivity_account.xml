@@ -5,11 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@mipmap/account_bg"
+    android:background="#AA000000"
     tools:context=".activity.acctivity_account"
     >
 
     <LinearLayout
+        android:id="@+id/head"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="10dp"
@@ -39,6 +40,7 @@
 
     </LinearLayout>
    <LinearLayout
+       android:id="@+id/body"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -66,6 +68,19 @@
            android:text="Đăng xuất"
            android:layout_margin="5dp"
            android:drawableRight="@drawable/baseline_logout_24"
+           android:background="@drawable/text_surrounded_design"
+           android:textColor="@color/white"
+           android:textSize="20sp"
+           android:paddingLeft="15dp"
+           android:paddingRight="10dp"
+           />
+       <TextView
+           android:id="@+id/exit"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:text="Thoát"
+           android:layout_margin="5dp"
+           android:drawableRight="@drawable/baseline_exit_to_app_24"
            android:background="@drawable/text_surrounded_design"
            android:textColor="@color/white"
            android:textSize="20sp"

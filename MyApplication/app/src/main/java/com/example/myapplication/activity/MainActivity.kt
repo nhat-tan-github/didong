@@ -83,11 +83,12 @@ class MainActivity : AppCompatActivity() {
                 val titleInput = title.text.toString()
                 if (titleInput.isNotEmpty()) {
                     val userId = sharedPref.getInt("id", -1).toString()
+                    val userName = sharedPref.getString("username", "Không có tên").toString()
                     if (userId != "-1") {
                         lifecycleScope.launch {
                             try {
                                 val result = withContext(Dispatchers.IO) {
-                                    createClassSuspend(apiService.createClass(titleInput, userId))
+                                    createClassSuspend(apiService.createClass(titleInput, userId, userName))
                                 }
                                 if (result == "Class created successfully") {
                                     Toast.makeText(this@MainActivity, result, Toast.LENGTH_SHORT).show()

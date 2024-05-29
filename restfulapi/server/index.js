@@ -110,7 +110,7 @@ app.post('/change-password', (req, res, next) => {
     con.query('SELECT * FROM users WHERE email = ?', [email], function(err, result, fields) {
         if (err) {
             console.log('[MySQL ERROR] ', err);
-            res.status(500).json('Internal server error');
+            res.status(500).json({ message:'Internal server error'});
             return;
         }
 
@@ -130,16 +130,16 @@ app.post('/change-password', (req, res, next) => {
                 [newEncryptedPassword, newSalt, email], function(err, result, fields) {
                     if (err) {
                         console.log('[MySQL ERROR]', err);
-                        res.status(500).json('Internal server error');
+                        res.status(500).json({ message:'Internal server error'});
                     } else {
-                        res.json('Password updated successfully');
+                        res.json({ message:'Password updated successfully'});
                     }
                 });
             } else {
-                res.status(401).json('Wrong old password');
+                res.status(401).json({ message:'Wrong old password'});
             }
         } else {
-            res.status(404).json('User not exists');
+            res.status(404).json({ message:'User not exists'});
         }
     });
 });
@@ -326,10 +326,11 @@ app.post('/post', async (req, res, next) => {
 //tạo lớp mới
 app.post('/create-class/', (req, res, next) => {
     const { title, adminId } = req.body;
+    var author_name = req.body.admin_name;
 
     console.log('Creating class with title:', title, 'and adminId:', adminId);
 
-    con.query('INSERT INTO `class`(`title`, `admin`) VALUES (?, ?)', [title, adminId], (err, result) => {
+    con.query('INSERT INTO `class`(`title`, `admin`,`admin_name`) VALUES (?, ?,?)', [title, adminId,author_name], (err, result) => {
         if (err) {
             console.error('[MySQL ERROR]', err);
             return res.status(500).json({ error: 'Create class error', details: err });
@@ -400,14 +401,14 @@ app.post('/leave-class/:classId', (req, res, next) => {
 app.put('/edit-post/:postId', async (req, res, next) => {
     try {
         var postId = req.params.postId;
-        var authorId = req.body.author_id; 
+        var userId = req.body.userId; 
 
         // Kiểm tra xem người gửi yêu cầu có phải là admin của lớp không
         const classResult = await queryDatabase('SELECT author_id FROM `posts` WHERE post_id = ?', [postId]);
 
         var adminId = classResult[0].author_id;
 
-        if (adminId != authorId) {
+        if (adminId != userId) {
             return res.status(403).json({ message: 'You are not authorized to edit this post' });
         }
 
@@ -444,6 +445,35 @@ app.get('/post-by-id/:postId', (req, res, next) => {
             res.json(result[0]);
         }
     });
+});
+// Xóa bài tập (chỉ cho phép admin của lớp xóa bài tập)
+app.post('/delete-post/:postId', async (req, res, next) => {
+    try {
+        var postId = req.params.postId;
+        var authorId = req.body.author_id; 
+
+        // Kiểm tra xem người dùng có phải là admin của lớp chứa bài tập không
+        const classResult = await queryDatabase('SELECT author_id FROM `posts` WHERE post_id = ?', [postId]);
+
+        var adminId = classResult[0].author_id;
+
+        if (adminId != authorId) {
+            return res.status(403).json({ message: 'You are not authorized to delete this post' });
+        }
+
+        // Nếu người dùng là admin, tiếp tục xóa bài tập
+        con.query('DELETE FROM `posts` WHERE post_id = ?', [postId], function (err, result, fields) {
+            if (err) {
+                console.log('[MySQL ERROR]', err);
+                res.status(500).json({ message: 'Internal server error' });
+            } else {
+                res.json({ message: 'Post deleted' });
+            }
+        });
+    } catch (err) {
+        console.log('[MySQL ERROR]', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
 //Start Server
